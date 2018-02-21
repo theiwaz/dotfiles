@@ -1,16 +1,18 @@
+export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/ryan/git-tf:/usr/local/share/dotnet:/Library/TeX/texbin"
+export PATH="$HOME/.fastlane/bin:$PATH"
+source $ZSH/oh-my-zsh.sh
+
 # Path to your oh-my-zsh installation.
 export ZSH=/Users/ryan/.oh-my-zsh
 
 autoload colors zsh/terminfo
 colors
 
-# Prompt
-precmd() { print "" }
-PS1="⟩"
-RPS1="%{$fg[magenta]%}%20<...<%~%<<%{$reset_color%}"
-
 # Autostart TMUX
 if [ "$TMUX" = "" ]; then tmux; fi
+
+# Faster response on keys
+export KEYTIMEOUT=1
 
 # stop typing cd space
 setopt auto_cd
@@ -21,19 +23,20 @@ alias git status='nocorrect git status'
 
 # ZSH plugin manager Antigen
 if [[ ! -f ~/.antigen.zsh ]]; then
-  curl https://raw.githubusercontent.com/zsh-users/antigen/master/antigen.zsh > ~/.antigen.zsh
+  #curl https://raw.githubusercontent.com/zsh-users/antigen/master/antigen.zsh > ~/.antigen.zsh
+  curl -L git.io/antigen > ~/antigen.zsh
 fi
+ANTIGEN_MUTEX=false
 source ~/.antigen.zsh
 
-# Syntax highlighting
+# plugins=(git npm node brew z sublime npm docker)
+# Antigen plugins 
 antigen bundle zsh-users/zsh-syntax-highlighting
-
-# Autocomplete
 antigen bundle zsh-users/zsh-autosuggestions
-
-# Git shorthand
 antigen bundle git
-
+antigen bundle git-prompt
+antigen bundle docker
+antigen bundle brew
 
 
 # Set name of the theme to load.
@@ -84,15 +87,8 @@ ZSH_THEME="robbyrussell"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git npm node brew z sublime npm docker)
 
 # User configuration
-
-export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/ryan/git-tf:/usr/local/share/dotnet:/Library/TeX/texbin"
-# export MANPATH="/usr/local/man:$MANPATH"
-export PATH="$HOME/.fastlane/bin:$PATH"
-
-source $ZSH/oh-my-zsh.sh
 
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
@@ -140,4 +136,32 @@ autoload -Uz compinit && compinit -i
 
 # Pygments color coding output
 alias pcat='pygmentize -f terminal256 -O style=native -g'
+
+# bindkeys VIM mode
+bindkey -v
+bindkey '^P' up-history
+bindkey '^N' down-history
+bindkey '^?' backward-delete-char
+bindkey '^h' backward-delete-char
+bindkey '^w' backward-kill-word
+bindkey '^r' history-incremental-search-backward
+
+# bindkeys Autosuggest
+bindkey '^ ' autosuggest-accept
+bindkey '^`' autosuggest-toggle
+
+
+# VI Mode with cursor indication
+
+function zle-line-init zle-keymap-select {
+	# Prompt
+	precmd() { print "" }
+	#VIM_PROMPT="%{$fg_bold[yellow]%} [% NORMAL]%  %{$reset_color%}"
+	PS1="%{$fg_bold[yellow]%}$(git_super_status) %{$reset_color%}⟩"
+	RPS1="%{$fg[magenta]%}%20<...<%~%<<%{$reset_color%} ${${KEYMAP/vicmd/$VIM_PROMPT}/(main|viins)/} $EPS1"
+	    zle reset-prompt
+    }
+
+zle -N zle-line-init
+zle -N zle-keymap-select
 
